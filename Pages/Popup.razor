@@ -1,0 +1,64 @@
+﻿@page "/popup.html"
+
+@inject EyedropperInterop Eyedropper
+@implements IDisposable
+
+
+<div class="container p-3">
+    <div class="text-center mb-4">
+        <h4>Color Picker</h4>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-3" @onclick="PickColor">
+        <i class="bi-eyedropper"></i> Pick Color
+    </button>
+
+    @if (!string.IsNullOrEmpty(SelectedColor))
+    {
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="color-preview me-3" 
+                         style="width:40px;height:40px;background:@SelectedColor">
+                    </div>
+                    <div>
+                        <h5 class="card-title mb-0 found-color-text">@SelectedColor</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="alert alert-danger mt-3">
+            @ErrorMessage
+        </div>
+    }
+</div>
+
+@code {
+    private ElementReference dropperButton;
+    private string SelectedColor { get; set; }
+    private string ErrorMessage { get; set; }
+
+    private async Task PickColor()
+    {
+        ErrorMessage = null;
+        SelectedColor = null;
+
+        try
+        {
+            SelectedColor = await Eyedropper.OpenEyeDropperAsync();
+        }
+        catch (JSException ex)
+        {
+            ErrorMessage = $"EyeDropper failed: {ex.Message}";
+        }
+    }
+
+    public void Dispose()
+    {
+        // Cleanup if needed
+    }
+}
