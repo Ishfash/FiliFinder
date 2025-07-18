@@ -5,9 +5,7 @@ window.initializeEyeDropper = function () {
             reject("EyeDropper API not supported");
             return;
         }
-
         const eyeDropper = new EyeDropper();
-
         eyeDropper.open()
             .then(result => resolve(result.sRGBHex))
             .catch(err => {

@@ -1,6 +1,9 @@
 ﻿@page "/popup.html"
+@using CPExtension.Models
+@using CPExtension.Services
 
 @inject EyedropperInterop Eyedropper
+@inject HttpClient http
 @implements IDisposable
 
 
@@ -29,6 +32,43 @@
         </div>
     }
 
+    @if (matchingFilaments != null)
+    {
+        <div class="mt-4">
+            <h5>Matching Filaments:</h5>
+
+            @foreach (var filament in matchingFilaments)
+            {
+                <div class="card mb-2">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-3">
+                                <div class="color-preview"
+                                     style="background:#@filament.HexColor; height:60px">
+                                </div>
+                            </div>
+                            <div class="col-9">
+                                <h6>@filament.ColorName</h6>
+                                <p class="mb-1">
+                                    <strong>@filament.Vendor?.Name</strong> |
+                                    @filament.Material?.Name
+                                </p>
+
+                                @if (!string.IsNullOrEmpty(filament.MfrPurchaseLink))
+                                {
+                                    <a href="@filament.MfrPurchaseLink" target="_blank"
+                                       class="btn btn-sm btn-outline-primary mt-1">
+                                        Purchase
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
     @if (!string.IsNullOrEmpty(ErrorMessage))
     {
         <div class="alert alert-danger mt-3">
@@ -41,19 +81,37 @@
     private ElementReference dropperButton;
     private string SelectedColor { get; set; }
     private string ErrorMessage { get; set; }
+    private bool isLoading = true;
+    private List<FilamentSwatch> matchingFilaments;
+    private FilamentService FilamentService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        FilamentService = new FilamentService(http);
+        await FilamentService.InitializeAsync();
+        isLoading = false;
+    }
 
     private async Task PickColor()
     {
         ErrorMessage = null;
         SelectedColor = null;
+        matchingFilaments = null;
 
         try
         {
             SelectedColor = await Eyedropper.OpenEyeDropperAsync();
+
+            if (!string.IsNullOrEmpty(SelectedColor))
+            {
+                // Remove # if present
+                var cleanHex = SelectedColor.Replace("#", "");
+                matchingFilaments = FilamentService.FindClosestFilaments(cleanHex, 5);
+            }
         }
-        catch (JSException ex)
+        catch (Exception ex)
         {
-            ErrorMessage = $"EyeDropper failed: {ex.Message}";
+            ErrorMessage = $"Error: {ex.Message}";
         }
     }
 

@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Blazor.BrowserExtension;
+﻿using Blazor.BrowserExtension;
 using CPExtension;
+using CPExtension.Services;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.UseBrowserExtension(browserExtension =>
@@ -19,5 +20,6 @@ builder.UseBrowserExtension(browserExtension =>
 
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 builder.Services.AddScoped<EyedropperInterop>();
+builder.Services.AddScoped<FilamentService>();
 
 await builder.Build().RunAsync();
