@@ -1,20 +1,16 @@
 ﻿
 using CPExtension.Models;
-using System.Net.Http.Json;
+using System.Text.Json;
+using Newtonsoft.Json;
+using Flurl.Http;
 
 
 namespace CPExtension.Services
 {
     public class FilamentService
     {
-        private readonly HttpClient _http;
         private List<FilamentSwatch> _allFilaments = new();
         private DateTime _lastUpdated = DateTime.MinValue;
-
-        public FilamentService(HttpClient http)
-        {
-            _http = http;
-        }
 
         public async Task InitializeAsync()
         {
@@ -31,7 +27,7 @@ namespace CPExtension.Services
 
             while (!string.IsNullOrEmpty(nextUrl))
             {
-                var response = await _http.GetFromJsonAsync<FilamentResponseDto>(nextUrl);
+                var response = await nextUrl.GetJsonAsync<FilamentResponseDto>();
                 if (response?.Results == null) break;
 
                 allFilaments.AddRange(response.Results);
