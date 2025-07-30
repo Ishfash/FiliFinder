@@ -39,7 +39,7 @@
 
             @foreach (var filament in matchingFilaments)
             {
-                <div class="card mb-2">
+                <div class="card mb-2 bg-light">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-3">
@@ -50,14 +50,14 @@
                             <div class="col-9">
                                 <h6>@filament.ColorName</h6>
                                 <p class="mb-1">
-                                    <strong>@filament.Vendor?.Name</strong> |
+                                    <strong>@filament.Manufacturer?.Name</strong> |
                                     @filament.Material?.Name
                                 </p>
 
                                 @if (!string.IsNullOrEmpty(filament.MfrPurchaseLink))
                                 {
                                     <a href="@filament.MfrPurchaseLink" target="_blank"
-                                       class="btn btn-sm btn-outline-primary mt-1">
+                                       class="btn btn-sm btn-outline-success mt-1">
                                         Purchase
                                     </a>
                                 }
@@ -87,7 +87,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        FilamentService = new FilamentService(http);
+        FilamentService = new FilamentService();
         await FilamentService.InitializeAsync();
         isLoading = false;
     }
