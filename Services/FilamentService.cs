@@ -1,9 +1,6 @@
-﻿
-using CPExtension.Models;
+﻿using CPExtension.Models;
 using System.Text.Json;
-using Newtonsoft.Json;
 using Flurl.Http;
-
 
 namespace CPExtension.Services
 {
@@ -25,13 +22,35 @@ namespace CPExtension.Services
             var allFilaments = new List<FilamentSwatch>();
             string nextUrl = "https://filamentcolors.xyz/api/swatch/";
 
-            while (!string.IsNullOrEmpty(nextUrl))
+            try
             {
-                var response = await nextUrl.GetJsonAsync<FilamentResponseDto>();
-                if (response?.Results == null) break;
+                while (!string.IsNullOrEmpty(nextUrl))
+                {
+                    // Configure JSON options for snake_case property names
+                    var jsonOptions = new JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                        PropertyNameCaseInsensitive = true
+                    };
 
-                allFilaments.AddRange(response.Results);
-                nextUrl = response.Next;
+                    // Use GetStringAsync and manually deserialize to have more control
+                    var jsonString = await nextUrl.GetStringAsync();
+                    var response = JsonSerializer.Deserialize<FilamentResponseDto>(jsonString, jsonOptions);
+
+                    if (response?.Results == null) break;
+
+                    allFilaments.AddRange(response.Results);
+                    nextUrl = response.Next;
+
+                    // Add a small delay to be respectful to the API
+                    await Task.Delay(100);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log the error or handle it appropriately
+                Console.WriteLine($"Error loading filaments: {ex.Message}");
+                throw;
             }
 
             _allFilaments = allFilaments;
@@ -45,6 +64,7 @@ namespace CPExtension.Services
 
             var targetColor = HexToRgb(hexColor);
             return _allFilaments
+                .Where(f => !string.IsNullOrEmpty(f.HexColor)) // Filter out invalid hex colors
                 .Select(f => new {
                     Swatch = f,
                     Distance = ColorDistance(targetColor, HexToRgb(f.HexColor))
@@ -57,14 +77,23 @@ namespace CPExtension.Services
 
         private (int R, int G, int B) HexToRgb(string hex)
         {
+            if (string.IsNullOrEmpty(hex)) return (0, 0, 0);
+
             hex = hex.TrimStart('#');
             if (hex.Length != 6) return (0, 0, 0);
 
-            return (
-                Convert.ToInt32(hex.Substring(0, 2), 16),
-                Convert.ToInt32(hex.Substring(2, 2), 16),
-                Convert.ToInt32(hex.Substring(4, 2), 16)
-            ); 
+            try
+            {
+                return (
+                    Convert.ToInt32(hex.Substring(0, 2), 16),
+                    Convert.ToInt32(hex.Substring(2, 2), 16),
+                    Convert.ToInt32(hex.Substring(4, 2), 16)
+                );
+            }
+            catch
+            {
+                return (0, 0, 0);
+            }
         }
 
         private double ColorDistance((int R, int G, int B) color1, (int R, int G, int B) color2)
@@ -77,5 +106,4 @@ namespace CPExtension.Services
             );
         }
     }
-
 }

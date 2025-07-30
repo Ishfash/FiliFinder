@@ -1,4 +1,6 @@
-﻿namespace CPExtension.Models
+﻿using System.Text.Json.Serialization;
+
+namespace CPExtension.Models
 {
     public class FilamentResponseDto
     {
@@ -9,12 +11,23 @@
 
     public class FilamentSwatch
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
+
+        [JsonPropertyName("color_name")]
         public string ColorName { get; set; }
+
+        [JsonPropertyName("hex_color")]
         public string HexColor { get; set; }
-        public Manufacturer Vendor { get; set; }
+
+        public Manufacturer Manufacturer { get; set; }
+
+        [JsonPropertyName("filament_type")]
         public FilamentType Material { get; set; }
+
+        [JsonPropertyName("card_img")]
         public string CardImg { get; set; }
+
+        [JsonPropertyName("mfr_purchase_link")]
         public string MfrPurchaseLink { get; set; }
     }
 
@@ -25,11 +38,13 @@
     }
 
     public class FilamentType
-    {      
+    {
         public string Name { get; set; }
+
+        [JsonPropertyName("hot_end_temp")]
         public int? HotEndTemp { get; set; }
+
+        [JsonPropertyName("bed_temp")]
         public int? BedTemp { get; set; }
     }
 }
-
- 
