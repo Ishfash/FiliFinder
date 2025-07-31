@@ -1,0 +1,48 @@
+﻿version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: filament_postgres
+    environment:
+      POSTGRES_DB: filament_colors
+      POSTGRES_USER: filament_user
+      POSTGRES_PASSWORD: filifind_it
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  api:
+    image: mcr.microsoft.com/dotnet/aspnet:8.0
+    container_name: filament_api
+    depends_on:
+      - postgres
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=filament_colors;Username=filament_user;Password=your_secure_password
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - "8080:80"
+    volumes:
+      - ./api:/app
+    restart: unless-stopped
+    command: ["dotnet", "/app/FilamentApi.dll"]
+
+  sync-service:
+    image: mcr.microsoft.com/dotnet/runtime:8.0
+    container_name: filament_sync
+    depends_on:
+      - postgres
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=filament_colors;Username=filament_user;Password=your_secure_password
+    volumes:
+      - ./sync-service:/app
+    restart: unless-stopped
+    command: ["dotnet", "/app/FilamentSync.dll"]
+
+volumes:
+  postgres_data:
+    driver: local
