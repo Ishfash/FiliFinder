@@ -1,5 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
-using FilamentApi.Models;
+﻿using FilamentApi.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FilamentApi.Data
 {

@@ -1,13 +1,12 @@
-﻿using SyncService.Data;
-using SyncService.Models;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FilamentApi.Data;
+using FilamentApi.Models;
 
 namespace FilamentColors.API.Controllers
 {
     [ApiController]
-    [Microsoft.AspNetCore.Mvc.Route("api/[controller]")]
+    [Route("api/[controller]")]
     public class SwatchesController : ControllerBase
     {
         private readonly FilamentDbContext _context;
